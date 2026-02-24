@@ -9,7 +9,7 @@ import Contact from "./pages/Contact";
 import { ThemeProvider } from "./context/ThemeContext";
 import DashboardLayout from "./Layouts/DashboardLayout";
 import DashboardPage from "./pages/dashboard/DashboardPage";
-import MyTasksPage from "./pages/dashboard/MyTasksPage";
+import MainTaskDashboard from "./pages/MainTaskDashboard";
 import ProjectsPage from "./pages/dashboard/ProjectsPage";
 import TeamPage from "./pages/dashboard/team/TeamPage";
 import NotFound from "./pages/NotFound";
@@ -39,7 +39,7 @@ export default function App() {
             </Route>
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<DashboardPage />} />
-              <Route path="my-tasks" element={<MyTasksPage />} />
+              <Route path="my-tasks" element={<MainTaskDashboard />} />
               <Route path="projects" element={<ProjectsPage />} />
               <Route path="team" element={<TeamPage />} />
             </Route>

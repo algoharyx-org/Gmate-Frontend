@@ -9,7 +9,7 @@ export default function Sidebar() {
 
   const navItems = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, end: true },
-    { to: "/dashboard/my-tasks", label: "My Tasks", icon: CheckSquare },
+    { to: "/dashboard/my-tasks", label: "Task Board", icon: CheckSquare },
     { to: "/dashboard/projects", label: "Projects", icon: FolderKanban },
     { to: "/dashboard/team", label: "Team", icon: Users },
   ];
