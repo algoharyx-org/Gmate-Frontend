@@ -1,26 +1,27 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
 import { Outlet } from "react-router-dom";
 import HeadView from "@/components/HeadView";
+import { useAppStore } from "@/store/useAppStore";
 
 export default function DashboardLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { isSidebarOpen, setSidebarOpen } = useAppStore();
 
   // Close sidebar on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && sidebarOpen) {
+      if (e.key === "Escape" && isSidebarOpen) {
         setSidebarOpen(false);
       }
     };
 
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [sidebarOpen]);
+  }, [isSidebarOpen, setSidebarOpen]);
 
   // Prevent body scroll when sidebar is open on mobile
   useEffect(() => {
-    if (sidebarOpen) {
+    if (isSidebarOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -28,12 +29,12 @@ export default function DashboardLayout() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [sidebarOpen]);
+  }, [isSidebarOpen]);
 
   return (
     <div className="bg-background flex h-screen w-full overflow-hidden">
       {/* Mobile overlay */}
-      {sidebarOpen && (
+      {isSidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity lg:hidden"
           onClick={() => setSidebarOpen(false)}
@@ -41,16 +42,16 @@ export default function DashboardLayout() {
         />
       )}
 
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar />
 
       <main className="bg-muted-foreground/10 relative flex h-full min-w-0 flex-1 flex-col overflow-hidden">
         {/* Mobile menu button */}
-        {!sidebarOpen && (
+        {!isSidebarOpen && (
           <button
             onClick={() => setSidebarOpen(true)}
             className="bg-background border-border hover:bg-accent absolute top-3 left-3 z-50 touch-manipulation rounded-lg border p-2.5 shadow-sm transition-colors lg:hidden"
             aria-label="Toggle sidebar"
-            aria-expanded={sidebarOpen}
+            aria-expanded={isSidebarOpen}
           >
             <svg
               className="text-foreground h-5 w-5 sm:h-6 sm:w-6"

@@ -1,25 +1,26 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
 import { Outlet } from "react-router-dom";
+import { useAppStore } from "@/store/useAppStore";
 
 export default function Layout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { isSidebarOpen, setSidebarOpen } = useAppStore();
 
   // Close sidebar on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && sidebarOpen) {
+      if (e.key === "Escape" && isSidebarOpen) {
         setSidebarOpen(false);
       }
     };
 
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [sidebarOpen]);
+  }, [isSidebarOpen, setSidebarOpen]);
 
   // Prevent body scroll when sidebar is open on mobile
   useEffect(() => {
-    if (sidebarOpen) {
+    if (isSidebarOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -27,12 +28,12 @@ export default function Layout() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [sidebarOpen]);
+  }, [isSidebarOpen]);
 
   return (
     <div className="flex min-h-screen">
       {/* Mobile overlay */}
-      {sidebarOpen && (
+      {isSidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 transition-opacity lg:hidden"
           onClick={() => setSidebarOpen(false)}
@@ -40,16 +41,16 @@ export default function Layout() {
         />
       )}
       
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar />
       
       <main className="flex-1 w-full min-w-0 max-h-screen overflow-auto lg:max-h-screen">
         {/* Mobile menu button */}
-        {!sidebarOpen && (
+        {!isSidebarOpen && (
           <button
             onClick={() => setSidebarOpen(true)}
             className="fixed top-3 left-3 z-50 lg:hidden p-2.5 rounded-lg bg-background border border-border shadow-md hover:bg-accent transition-colors touch-manipulation"
             aria-label="Toggle sidebar"
-            aria-expanded={sidebarOpen}
+            aria-expanded={isSidebarOpen}
           >
             <svg
               className="w-5 h-5 sm:w-6 sm:h-6"

@@ -1,27 +1,28 @@
 import { CheckSquare, FolderKanban, LayoutDashboard, Users, X } from "lucide-react";
 import { useDarkMode } from "@/context/ThemeContext";
-import { Link, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import { useAppStore } from "@/store/useAppStore";
 
-interface SidebarProps {
-  isOpen?: boolean;
-  onClose?: () => void;
-}
-
-export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
+export default function Sidebar() {
   const { isDarkMode } = useDarkMode();
-  const param = useLocation();
-  console.log(param.pathname);
-  
+  const { isSidebarOpen, setSidebarOpen, currentUser } = useAppStore();
+
+  const navItems = [
+    { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, end: true },
+    { to: "/dashboard/my-tasks", label: "My Tasks", icon: CheckSquare },
+    { to: "/dashboard/projects", label: "Projects", icon: FolderKanban },
+    { to: "/dashboard/team", label: "Team", icon: Users },
+  ];
 
   return (
     <>
       <aside
         className={`border-sidebar-border bg-sidebar fixed inset-y-0 left-0 z-50 flex h-screen w-72 flex-col justify-between border-r transition-transform duration-300 lg:relative lg:translate-x-0 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <button
-          onClick={onClose}
+          onClick={() => setSidebarOpen(false)}
           className="hover:bg-inline-background text-muted-foreground hover:text-foreground absolute top-4 right-4 rounded-lg p-2 lg:hidden"
           aria-label="Close sidebar"
         >
@@ -49,35 +50,41 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         </div>
 
         <nav className="flex flex-1 flex-col gap-2 overflow-y-auto p-4 sm:p-6">
-          <Link
-            to="/dashboard"
-            className={param.pathname === "/dashboard" ? "bg-inline-background text-inline-primary before:bg-inline-primary relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-semibold transition-colors before:absolute before:inset-0 before:top-0 before:left-0 before:block before:h-full before:w-1 before:rounded-l-md sm:px-4 sm:py-3 sm:before:w-2" : "text-muted-foreground hover:bg-inline-background relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-medium transition-colors sm:px-4 sm:py-3"}
-          >
-            <LayoutDashboard className="shrink-0" size={20} />
-            <span className="truncate">Dashboard</span>
-          </Link>
-          <Link
-            to="/dashboard/my-tasks"
-            className={param.pathname === "/dashboard/my-tasks" ? "bg-inline-background text-inline-primary before:bg-inline-primary relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-semibold transition-colors before:absolute before:inset-0 before:top-0 before:left-0 before:block before:h-full before:w-1 before:rounded-l-md sm:px-4 sm:py-3 sm:before:w-2" : "text-muted-foreground hover:bg-inline-background relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-medium transition-colors sm:px-4 sm:py-3"}
-          >
-            <CheckSquare className="shrink-0" size={20} />
-            <span className="truncate">My Tasks</span>
-          </Link>
-          <Link
-            to="/dashboard/projects"
-            className={param.pathname === "/dashboard/projects" ? "bg-inline-background text-inline-primary before:bg-inline-primary relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-semibold transition-colors before:absolute before:inset-0 before:top-0 before:left-0 before:block before:h-full before:w-1 before:rounded-l-md sm:px-4 sm:py-3 sm:before:w-2" : "text-muted-foreground hover:bg-inline-background relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-medium transition-colors sm:px-4 sm:py-3"}
-          >
-            <FolderKanban className="shrink-0" size={20} />
-            <span className="truncate">Projects</span>
-          </Link>
-          <Link
-            to="/dashboard/team"
-            className={param.pathname === "/dashboard/team" ? "bg-inline-background text-inline-primary before:bg-inline-primary relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-semibold transition-colors before:absolute before:inset-0 before:top-0 before:left-0 before:block before:h-full before:w-1 before:rounded-l-md sm:px-4 sm:py-3 sm:before:w-2" : "text-muted-foreground hover:bg-inline-background relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-medium transition-colors sm:px-4 sm:py-3"}
-          >
-            <Users className="shrink-0" size={20} />
-            <span className="truncate">Team</span>
-          </Link>
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className={({ isActive }) =>
+                `relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm transition-all sm:px-4 sm:py-3 ${
+                  isActive
+                    ? "bg-inline-background text-inline-primary font-semibold before:absolute before:inset-0 before:top-0 before:left-0 before:block before:h-full before:w-1 before:rounded-l-md before:bg-inline-primary sm:before:w-2"
+                    : "text-muted-foreground font-medium hover:bg-inline-background hover:text-foreground"
+                }`
+              }
+            >
+              <item.icon className="shrink-0" size={20} />
+              <span className="truncate">{item.label}</span>
+            </NavLink>
+          ))}
         </nav>
+
+        {/* Mock User Section */}
+        {currentUser && (
+          <div className="border-sidebar-border mt-auto border-t p-4">
+            <div className="flex items-center gap-3 rounded-lg p-2 hover:bg-accent/50 transition-colors cursor-pointer">
+              <img
+                src={currentUser.avatarUrl}
+                alt={currentUser.name}
+                className="size-9 rounded-full"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{currentUser.name}</p>
+                <p className="truncate text-xs text-muted-foreground">{currentUser.email}</p>
+              </div>
+            </div>
+          </div>
+        )}
       </aside>
     </>
   );

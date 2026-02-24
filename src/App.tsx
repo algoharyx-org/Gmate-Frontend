@@ -8,6 +8,7 @@ import DashboardLayout from "./Layouts/DashboardLayout";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import MyTasksPage from "./pages/dashboard/MyTasksPage";
 import ProjectsPage from "./pages/dashboard/ProjectsPage";
+import TeamPage from "./pages/dashboard/team/TeamPage";
 import NotFound from "./pages/NotFound";
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
             <Route index element={<DashboardPage />} />
             <Route path="my-tasks" element={<MyTasksPage />} />
             <Route path="projects" element={<ProjectsPage />} />
+            <Route path="team" element={<TeamPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
