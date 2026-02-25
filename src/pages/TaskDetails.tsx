@@ -11,8 +11,9 @@ import {
   FileText,
   X,
 } from "lucide-react";
-import { tasks } from "@/data/tasks";
-import type { TaskStatus } from "@/data/tasks";
+import type { TaskStatus, Task } from "@/data/tasks";
+import { useTasks } from "@/context/TasksContext";
+import EditTaskModal from "@/components/EditTaskModal";
 
 const getStatusBadge = (status: TaskStatus) => {
   switch (status) {
@@ -47,6 +48,7 @@ const getStatusBadge = (status: TaskStatus) => {
 export default function TaskDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { tasks } = useTasks();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -54,11 +56,12 @@ export default function TaskDetails() {
     const numericId = Number(id);
     if (Number.isNaN(numericId)) return undefined;
     return tasks.find((t) => t.id === numericId);
-  }, [id]);
+  }, [id, tasks]);
 
   const [isCompleted, setIsCompleted] = useState<boolean>(
     () => task?.status === "completed",
   );
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [comments, setComments] = useState([
     {
       id: 1,
@@ -143,14 +146,22 @@ export default function TaskDetails() {
   return (
     <div className="px-4 py-6 sm:px-6 md:px-8 lg:px-10 lg:py-8">
       <div className="mx-auto max-w-3xl space-y-6 md:space-y-8">
-        <div className="flex items-center justify-between gap-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="border-border bg-background text-foreground hover:bg-accent inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-semibold shadow-sm transition-colors sm:px-4 sm:text-xs"
-          >
-            <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
-            Back to tasks
-          </button>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate(-1)}
+              className="border-border bg-background text-foreground hover:bg-accent inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-semibold shadow-sm transition-colors sm:px-4 sm:text-xs"
+            >
+              <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+              Back to tasks
+            </button>
+            <button
+              onClick={() => setEditingTask(task)}
+              className="border-border bg-card text-foreground hover:bg-accent inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-semibold shadow-sm transition-colors sm:px-4 sm:text-xs"
+            >
+              Edit task
+            </button>
+          </div>
 
           <button
             onClick={() => setIsCompleted(!isCompleted)}
@@ -338,6 +349,13 @@ export default function TaskDetails() {
             </div>
           </form>
         </section>
+
+        {editingTask && (
+          <EditTaskModal
+            task={editingTask}
+            onClose={() => setEditingTask(null)}
+          />
+        )}
       </div>
     </div>
   );

@@ -17,7 +17,11 @@ const getStatusStyles = (status: TaskStatus) => {
   }
 };
 
-export default function TaskCard({ task }: { task: Task }) {
+type TaskCardProps = {
+  task: Task;
+};
+
+export default function TaskCard({ task }: TaskCardProps) {
   return (
     <article
       key={task.id}

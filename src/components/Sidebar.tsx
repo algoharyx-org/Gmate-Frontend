@@ -1,4 +1,11 @@
-import { CheckSquare, FolderKanban, LayoutDashboard, Users, X } from "lucide-react";
+import {
+  CheckSquare,
+  FolderKanban,
+  LayoutDashboard,
+  Users,
+  UserCircle,
+  X,
+} from "lucide-react";
 import { useDarkMode } from "@/context/ThemeContext";
 import { Link, useLocation } from "react-router-dom";
 
@@ -11,7 +18,6 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const { isDarkMode } = useDarkMode();
   const param = useLocation();
   console.log(param.pathname);
-  
 
   return (
     <>
@@ -51,33 +57,62 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         <nav className="flex flex-1 flex-col gap-2 overflow-y-auto p-4 sm:p-6">
           <Link
             to="/dashboard"
-            className={param.pathname === "/dashboard" ? "bg-inline-background text-inline-primary before:bg-inline-primary relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-semibold transition-colors before:absolute before:inset-0 before:top-0 before:left-0 before:block before:h-full before:w-1 before:rounded-l-md sm:px-4 sm:py-3 sm:before:w-2" : "text-muted-foreground hover:bg-inline-background relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-medium transition-colors sm:px-4 sm:py-3"}
+            className={
+              param.pathname === "/dashboard"
+                ? "bg-inline-background text-inline-primary before:bg-inline-primary relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-semibold transition-colors before:absolute before:inset-0 before:top-0 before:left-0 before:block before:h-full before:w-1 before:rounded-l-md sm:px-4 sm:py-3 sm:before:w-2"
+                : "text-muted-foreground hover:bg-inline-background relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-medium transition-colors sm:px-4 sm:py-3"
+            }
           >
             <LayoutDashboard className="shrink-0" size={20} />
             <span className="truncate">Dashboard</span>
           </Link>
           <Link
             to="/dashboard/my-tasks"
-            className={param.pathname === "/dashboard/my-tasks" ? "bg-inline-background text-inline-primary before:bg-inline-primary relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-semibold transition-colors before:absolute before:inset-0 before:top-0 before:left-0 before:block before:h-full before:w-1 before:rounded-l-md sm:px-4 sm:py-3 sm:before:w-2" : "text-muted-foreground hover:bg-inline-background relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-medium transition-colors sm:px-4 sm:py-3"}
+            className={
+              param.pathname === "/dashboard/my-tasks"
+                ? "bg-inline-background text-inline-primary before:bg-inline-primary relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-semibold transition-colors before:absolute before:inset-0 before:top-0 before:left-0 before:block before:h-full before:w-1 before:rounded-l-md sm:px-4 sm:py-3 sm:before:w-2"
+                : "text-muted-foreground hover:bg-inline-background relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-medium transition-colors sm:px-4 sm:py-3"
+            }
           >
             <CheckSquare className="shrink-0" size={20} />
             <span className="truncate">My Tasks</span>
           </Link>
           <Link
             to="/dashboard/projects"
-            className={param.pathname === "/dashboard/projects" ? "bg-inline-background text-inline-primary before:bg-inline-primary relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-semibold transition-colors before:absolute before:inset-0 before:top-0 before:left-0 before:block before:h-full before:w-1 before:rounded-l-md sm:px-4 sm:py-3 sm:before:w-2" : "text-muted-foreground hover:bg-inline-background relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-medium transition-colors sm:px-4 sm:py-3"}
+            className={
+              param.pathname === "/dashboard/projects"
+                ? "bg-inline-background text-inline-primary before:bg-inline-primary relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-semibold transition-colors before:absolute before:inset-0 before:top-0 before:left-0 before:block before:h-full before:w-1 before:rounded-l-md sm:px-4 sm:py-3 sm:before:w-2"
+                : "text-muted-foreground hover:bg-inline-background relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-medium transition-colors sm:px-4 sm:py-3"
+            }
           >
             <FolderKanban className="shrink-0" size={20} />
             <span className="truncate">Projects</span>
           </Link>
           <Link
             to="/dashboard/team"
-            className={param.pathname === "/dashboard/team" ? "bg-inline-background text-inline-primary before:bg-inline-primary relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-semibold transition-colors before:absolute before:inset-0 before:top-0 before:left-0 before:block before:h-full before:w-1 before:rounded-l-md sm:px-4 sm:py-3 sm:before:w-2" : "text-muted-foreground hover:bg-inline-background relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-medium transition-colors sm:px-4 sm:py-3"}
+            className={
+              param.pathname === "/dashboard/team"
+                ? "bg-inline-background text-inline-primary before:bg-inline-primary relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-semibold transition-colors before:absolute before:inset-0 before:top-0 before:left-0 before:block before:h-full before:w-1 before:rounded-l-md sm:px-4 sm:py-3 sm:before:w-2"
+                : "text-muted-foreground hover:bg-inline-background relative inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-medium transition-colors sm:px-4 sm:py-3"
+            }
           >
             <Users className="shrink-0" size={20} />
             <span className="truncate">Team</span>
           </Link>
         </nav>
+        <div className="p-4 sm:p-6">
+          <Link
+            to="/dashboard/profile"
+            className={
+              param.pathname === "/dashboard/profile"
+                ? "bg-inline-background text-inline-primary before:bg-inline-primary relative inline-flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-semibold transition-colors before:absolute before:inset-0 before:top-0 before:left-0 before:block before:h-full before:w-1 before:rounded-l-md sm:px-4 sm:py-3 sm:before:w-2"
+                : "text-muted-foreground hover:bg-inline-background relative inline-flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm font-medium transition-colors sm:px-4 sm:py-3"
+            }
+          >
+            <UserCircle className="shrink-0" size={20} />
+            <span className="truncate">Profile</span>
+          </Link>
+        </div>
       </aside>
     </>
   );

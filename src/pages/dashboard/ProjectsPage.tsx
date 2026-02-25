@@ -1,7 +1,6 @@
-import { Plus, FolderKanban, Users, CheckSquare } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import ProjectCard from "@/components/ProjectCard";
 
 const projects = [
   {
@@ -76,52 +75,9 @@ export default function ProjectsPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {projects.map((project) => {
-          const progress = Math.round(
-            (project.completed / project.tasks) * 100,
-          );
-          return (
-            <div
-              key={project.id}
-              className="border-border bg-card hover:border-primary/20 shadow-card cursor-pointer rounded-xl border p-5 transition-colors"
-            >
-              <div className="mb-3 flex items-start justify-between">
-                <div className="bg-primary/10 flex h-9 w-9 items-center justify-center rounded-lg">
-                  <FolderKanban className="text-primary h-4 w-4" />
-                </div>
-                <Badge
-                  variant="outline"
-                  className={
-                    project.status === "completed"
-                      ? "text-success border-success/20 bg-success/10"
-                      : "text-primary border-primary/20 bg-primary/10"
-                  }
-                >
-                  {project.status}
-                </Badge>
-              </div>
-              <h3 className="text-foreground mb-1 font-semibold">
-                {project.name}
-              </h3>
-              <p className="text-muted-foreground mb-4 text-xs">
-                {project.desc}
-              </p>
-
-              <Progress value={progress} className="mb-3 h-1.5" />
-
-              <div className="text-muted-foreground flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1">
-                  <CheckSquare className="h-3 w-3" />
-                  {project.completed}/{project.tasks}
-                </div>
-                <div className="flex items-center gap-1">
-                  <Users className="h-3 w-3" />
-                  {project.members}
-                </div>
-              </div>
-            </div>
-          );
-        })}
+        {projects.map((project) => (
+          <ProjectCard key={project.id} project={project} />
+        ))}
       </div>
     </div>
   );
