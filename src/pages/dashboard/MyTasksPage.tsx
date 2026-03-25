@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Plus, LayoutDashboard, List } from "lucide-react";
+import { Search, Plus, LayoutDashboard, List, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TaskCard from "@/components/shared/TaskCard";
 import Empty from "@/components/shared/Empty";
@@ -7,11 +7,15 @@ import { useTaskStore } from "@/store/useTaskStore";
 import type { TaskStatus } from "@/data/tasks";
 import AddTaskDialog from "@/components/tasks/AddTaskDialog";
 import KanbanBoard from "@/components/KanbanBoard";
+import { useQuery } from "@tanstack/react-query";
+import { taskService } from "@/services/task.service";
+import { ErrorFallback } from "@/components/shared/ErrorFallback";
+import { ApiError } from "@/api/axios";
 
 const statusFilterOptions: { value: TaskStatus | "all"; label: string }[] = [
   { value: "all", label: "All" },
   { value: "important", label: "Important" },
-  { value: "inProgress", label: "In Progress" },
+  { value: "in-progress", label: "In Progress" },
   { value: "upcoming", label: "Upcoming" },
   { value: "completed", label: "Completed" },
 ];
@@ -25,11 +29,29 @@ const neonStyles: Record<string, string> = {
 };
 
 export default function MyTasksPage() {
-  const taskList = useTaskStore((state) => state.tasks);
+  const { tasks: storeTasks, setTasks } = useTaskStore();
   const [statusFilter, setStatusFilter] = useState<TaskStatus | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "board">("list");
+
+  const { 
+    data: apiTasks, 
+    isLoading, 
+    error,
+    refetch 
+  } = useQuery({
+    queryKey: ["my-tasks"],
+    queryFn: async () => {
+      const tasks = await taskService.getMyTasks();
+      setTasks(tasks);
+      return tasks;
+    },
+    retry: 1,
+  });
+
+  const taskList = apiTasks || storeTasks;
+  const isNetworkError = error instanceof ApiError && error.isNetworkError;
 
   const filtered = taskList.filter((task) => {
     const matchStatus =
@@ -37,12 +59,27 @@ export default function MyTasksPage() {
     const matchSearch =
       !searchQuery.trim() ||
       task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      task.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      task.tag.toLowerCase().includes(searchQuery.toLowerCase());
+      (task.description && task.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (task.tag && task.tag.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchStatus && matchSearch;
   });
 
   const isEmpty = taskList.length === 0;
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error && storeTasks.length === 0) {
+    return <ErrorFallback 
+      isNetworkError={isNetworkError}
+      onRetry={() => refetch()}
+    />;
+  }
 
   return (
     <div className="w-full max-w-7xl mx-auto p-6 md:p-8 space-y-8 animate-fade-in text-slate-900 dark:text-slate-100">
@@ -123,7 +160,7 @@ export default function MyTasksPage() {
         ) : viewMode === "list" ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((task) => (
-              <TaskCard key={task.id} task={task} />
+              <TaskCard key={task._id} task={task} />
             ))}
 
             <button

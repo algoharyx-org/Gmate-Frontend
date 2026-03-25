@@ -1,68 +1,66 @@
-export type TaskStatus = "important" | "inProgress" | "upcoming" | "completed";
+import type { Task, TaskStatus } from "@/types/project";
 
-export type Task = {
-  id: number;
-  title: string;
-  description: string;
-  status: TaskStatus;
-  tag: string;
-  date: string;
-  projectId?: string; // Added to support project-specific tasks
-};
+export { type TaskStatus };
 
 export const tasks: Task[] = [
   {
-    id: 1,
+    _id: "1",
     title: "Project Research",
     description: "Collect requirements and define clear milestones for the sprint.",
     status: "important",
     tag: "URGENT",
-    date: "Mon, Oct 11, 2025",
-    projectId: "1",
+    dueDate: "2025-10-11",
+    project: "1",
+    priority: "urgent",
   },
   {
-    id: 2,
+    _id: "2",
     title: "Design System Update",
     description: "Review dashboard cards and refine responsive behavior.",
-    status: "inProgress",
+    status: "in-progress",
     tag: "IN PROGRESS",
-    date: "Tue, Oct 12, 2025",
-    projectId: "1",
+    dueDate: "2025-10-12",
+    project: "1",
+    priority: "high",
   },
   {
-    id: 3,
+    _id: "3",
     title: "Client Meeting",
     description: "Walk through the latest GMATE LMS prototype with stakeholders.",
     status: "upcoming",
     tag: "MEETING",
-    date: "Wed, Oct 13, 2025",
-    projectId: "2",
+    dueDate: "2025-10-13",
+    project: "2",
+    priority: "medium",
   },
   {
-    id: 4,
+    _id: "4",
     title: "Weekly Sync",
     description: "Align on course roadmap, blockers and next actions.",
     status: "upcoming",
     tag: "TEAM",
-    date: "Thu, Oct 14, 2025",
-    projectId: "2",
+    dueDate: "2025-10-14",
+    project: "2",
+    priority: "low",
   },
   {
-    id: 5,
+    _id: "5",
     title: "Fix Bug #104",
     description: "Resolve layout issues on the student dashboard grid view.",
     status: "important",
     tag: "BUG",
-    date: "Fri, Oct 15, 2025",
-    projectId: "1",
+    dueDate: "2025-10-15",
+    project: "1",
+    priority: "urgent",
   },
   {
-    id: 6,
+    _id: "6",
     title: "API Integration",
     description: "Connect progress tracking endpoints with the frontend.",
     status: "completed",
     tag: "BACKEND",
-    date: "Sat, Oct 16, 2025",
-    projectId: "3",
+    dueDate: "2025-10-16",
+    project: "3",
+    priority: "medium",
   },
 ];

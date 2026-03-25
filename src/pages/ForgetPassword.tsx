@@ -4,15 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useForgotPassword } from "@/hooks/useForgotPassword";
-import { useForm } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
+
+interface ForgetPasswordForm {
+  email: string;
+}
 
 export default function ForgetPassword() {
   const { forgotPassword, isPending } = useForgotPassword();
-  const { register, formState, handleSubmit, reset } = useForm();
+  const { register, formState, handleSubmit, reset } = useForm<ForgetPasswordForm>();
   const { errors } = formState;
 
-  function onSubmit({ email }: {email: string}) {
-    forgotPassword({ email }, { onSettled: () => reset() });
+  const onSubmit: SubmitHandler<ForgetPasswordForm> = (data) => {
+    forgotPassword({ email: data.email }, { onSettled: () => reset() });
   }
 
   return (
@@ -97,7 +101,7 @@ export default function ForgetPassword() {
                 />
               </div>
               <span className="text-destructive text-sm">
-                {errors.email?.message}
+                {String(errors.email?.message || "")}
               </span>
             </div>
 

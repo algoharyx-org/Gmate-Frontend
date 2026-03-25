@@ -4,52 +4,52 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const MOCK_PROJECTS: Project[] = [
   {
-    id: "1",
-    name: "Mobile App Redesign",
+    _id: "1",
+    title: "Mobile App Redesign",
     description: "Redesigning the mobile experience with a focus on usability.",
     status: "active",
     progress: 75,
-    members: 5,
+    members: [],
   },
   {
-    id: "2",
-    name: "Backend API v2",
+    _id: "2",
+    title: "Backend API v2",
     description: "New REST API architecture for improved performance.",
     status: "active",
     progress: 37,
-    members: 3,
+    members: [],
   },
 ];
 
 const MOCK_TASKS: Task[] = [
   {
-    id: "t1",
-    projectId: "1",
+    _id: "t1",
+    project: "1",
     title: "Project Research",
     description: "Collect requirements and define clear milestones for the sprint.",
-    status: "inProgress",
+    status: "in-progress",
     priority: "urgent",
-    assignee: { name: "Mohamed Algoahry", avatar: "/assets/team/mohamed_algoahry.jpg" },
+    assignee: { _id: "u1", name: "Mohamed Algoahry", avatar: "/assets/team/mohamed_algoahry.jpg" },
     dueDate: "2026-03-01",
   },
   {
-    id: "t2",
-    projectId: "1",
+    _id: "t2",
+    project: "1",
     title: "Design System Update",
     description: "Review dashboard cards and refine responsive behavior.",
-    status: "todo",
+    status: "to-do",
     priority: "high",
-    assignee: { name: "Mohamed Teama", avatar: "/assets/team/mohamed_teama.jpg" },
+    assignee: { _id: "u2", name: "Mohamed Teama", avatar: "/assets/team/mohamed_teama.jpg" },
     dueDate: "2026-03-05",
   },
   {
-    id: "t3",
-    projectId: "1",
+    _id: "t3",
+    project: "1",
     title: "Client Meeting",
     description: "Walk through the latest prototype with stakeholders.",
     status: "review",
     priority: "medium",
-    assignee: { name: "Eslam Mohamed", avatar: "/assets/team/eslam_mohamed.jpg" },
+    assignee: { _id: "u3", name: "Eslam Mohamed", avatar: "/assets/team/eslam_mohamed.jpg" },
     dueDate: "2026-03-10",
   },
 ];
@@ -119,46 +119,46 @@ export const api = {
   },
   getProject: async (id: string): Promise<Project | undefined> => {
     await delay(800);
-    return MOCK_PROJECTS.find((p) => p.id === id);
+    return MOCK_PROJECTS.find((p) => p._id === id);
   },
-  createProject: async (data: Omit<Project, "id" | "progress" | "members">): Promise<Project> => {
+  createProject: async (data: Omit<Project, "_id" | "progress" | "members">): Promise<Project> => {
     await delay(1000);
     const newProject: Project = {
       ...data,
-      id: Math.random().toString(36).substr(2, 9),
+      _id: Math.random().toString(36).substr(2, 9),
       progress: 0,
-      members: 1,
+      members: [],
     };
     MOCK_PROJECTS.push(newProject);
     return newProject;
   },
   deleteProject: async (id: string): Promise<void> => {
     await delay(800);
-    const index = MOCK_PROJECTS.findIndex((p) => p.id === id);
+    const index = MOCK_PROJECTS.findIndex((p) => p._id === id);
     if (index !== -1) {
       MOCK_PROJECTS.splice(index, 1);
     }
   },
   getProjectTasks: async (projectId: string): Promise<Task[]> => {
     await delay(1200); 
-    return MOCK_TASKS.filter((t) => t.projectId === projectId);
+    return MOCK_TASKS.filter((t) => t.project === projectId);
   },
   updateTaskStatus: async (taskId: string, status: TaskStatus): Promise<void> => {
     await delay(500);
-    const task = MOCK_TASKS.find((t) => t.id === taskId);
+    const task = MOCK_TASKS.find((t) => t._id === taskId);
     if (task) {
       task.status = status;
     }
   },
-  createTask: async (data: Omit<Task, "id">): Promise<Task> => {
+  createTask: async (data: Omit<Task, "_id">): Promise<Task> => {
     await delay(800);
-    const newTask: Task = { ...data, id: `t${Date.now()}` };
+    const newTask: Task = { ...data, _id: `t${Date.now()}` };
     MOCK_TASKS.push(newTask);
     return newTask;
   },
   deleteTask: async (id: string): Promise<void> => {
     await delay(600);
-    const index = MOCK_TASKS.findIndex((t) => t.id === id);
+    const index = MOCK_TASKS.findIndex((t) => t._id === id);
     if (index !== -1) {
       MOCK_TASKS.splice(index, 1);
     }

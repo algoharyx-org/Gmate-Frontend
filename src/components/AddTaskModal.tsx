@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useTaskStore } from "@/store/useTaskStore";
-import type { TaskStatus } from "@/data/tasks";
 import { Label } from "./ui/label";
 import {
   Select,
@@ -18,9 +17,9 @@ import {
 const defaultForm = {
   title: "",
   description: "",
-  status: "upcoming" as TaskStatus,
+  status: "upcoming",
   tag: "GENERAL",
-  date: "",
+  dueDate: "",
 };
 
 type AddTaskModalProps = {
@@ -54,26 +53,15 @@ export default function AddTaskModal({ onClose }: AddTaskModalProps) {
       return;
     }
 
-    const formattedDate = form.date
-      ? new Date(form.date).toLocaleDateString("en-US", {
-          weekday: "short",
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        })
-      : new Date().toLocaleDateString("en-US", {
-          weekday: "short",
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        });
-
     addTask({
+      _id: String(Date.now()),
       title: form.title.trim(),
       description: form.description.trim(),
-      status: selectValue,
+      status: selectValue as any,
       tag: form.tag.trim() || "GENERAL",
-      date: formattedDate,
+      dueDate: form.dueDate,
+      priority: "medium",
+      project: "",
     });
 
     setForm(defaultForm);
@@ -178,9 +166,9 @@ export default function AddTaskModal({ onClose }: AddTaskModalProps) {
             </Label>
             <Input
               id="add-date"
-              name="date"
+              name="dueDate"
               type="date"
-              value={form.date}
+              value={form.dueDate}
               onChange={handleChange}
             />
           </div>

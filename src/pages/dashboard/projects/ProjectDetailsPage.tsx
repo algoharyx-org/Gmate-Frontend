@@ -68,7 +68,7 @@ const ProjectDetailsPage: React.FC = () => {
           </Button>
           <div className="flex flex-col">
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
+              <h1 className="text-3xl font-bold tracking-tight">{project.title}</h1>
               <Badge variant="secondary" className={statusColors[project.status] || statusColors.active}>
                 {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
               </Badge>

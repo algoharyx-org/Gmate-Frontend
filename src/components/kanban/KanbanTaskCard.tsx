@@ -34,7 +34,7 @@ function KanbanTaskCardComponent({ task, onClick }: Props) {
     transition,
     isDragging,
   } = useSortable({
-    id: task.id,
+    id: task._id,
     data: {
       type: "Task",
       task,
@@ -55,6 +55,8 @@ function KanbanTaskCardComponent({ task, onClick }: Props) {
       />
     );
   }
+
+  const assigneeName = typeof task.assignee === 'object' ? task.assignee.name : (task.assignee || 'Unassigned');
 
   return (
     <div
@@ -89,10 +91,10 @@ function KanbanTaskCardComponent({ task, onClick }: Props) {
       <div className="flex items-center justify-between pt-3 border-t border-border/50 mt-1">
         <div className="flex items-center gap-2">
           <div className="h-6 w-6 rounded-full border border-border bg-muted overflow-hidden">
-            <img src="/assets/avatar.jpg" alt="avatar" className="w-full h-full object-cover" />
+            <img src={typeof task.assignee === 'object' && task.assignee.avatar ? task.assignee.avatar : "/assets/avatar.jpg"} alt="avatar" className="w-full h-full object-cover" />
           </div>
           <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-            {task.assignee?.name.split(' ')[0]}
+            {assigneeName.split(' ')[0]}
           </span>
         </div>
         

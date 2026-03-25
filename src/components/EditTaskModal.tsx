@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useTaskStore } from "@/store/useTaskStore";
-import type { Task, TaskStatus } from "@/data/tasks";
+import type { Task } from "@/types/project";
 import { Label } from "./ui/label";
 import {
   Select,
@@ -24,13 +24,13 @@ export default function EditTaskModal({ task, onClose }: EditTaskModalProps) {
   const updateTask = useTaskStore((state) => state.updateTask);
   const [form, setForm] = useState({
     title: task.title,
-    description: task.description,
-    status: task.status as TaskStatus,
-    tag: task.tag,
-    date: "",
+    description: task.description || "",
+    status: task.status,
+    tag: task.tag || "",
+    dueDate: task.dueDate || "",
   });
   const [error, setError] = useState("");
-  const [selectValue, setSelectValue] = useState(form.status);
+  const [selectValue, setSelectValue] = useState<string>(form.status);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -53,21 +53,12 @@ export default function EditTaskModal({ task, onClose }: EditTaskModalProps) {
       return;
     }
 
-    const formattedDate = form.date
-      ? new Date(form.date).toLocaleDateString("en-US", {
-          weekday: "short",
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        })
-      : task.date;
-
-    updateTask(task.id, {
+    updateTask(task._id, {
       title: form.title.trim(),
       description: form.description.trim(),
-      status: selectValue,
+      status: selectValue as any,
       tag: form.tag.trim() || "GENERAL",
-      date: formattedDate,
+      dueDate: form.dueDate,
     });
 
     onClose();
@@ -164,13 +155,13 @@ export default function EditTaskModal({ task, onClose }: EditTaskModalProps) {
             <Label htmlFor="edit-date">Due date</Label>
             <Input
               id="edit-date"
-              name="date"
+              name="dueDate"
               type="date"
-              value={form.date}
+              value={form.dueDate}
               onChange={handleChange}
             />
             <p className="text-muted-foreground mt-1 text-[11px]">
-              Leave empty to keep current date ({task.date}).
+              Leave empty to keep current date ({task.dueDate || "none"}).
             </p>
           </div>
 

@@ -1,6 +1,6 @@
 import { contactApi } from "@/services/apiUser";
 import { useMutation } from "@tanstack/react-query";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 export function useContact() {
   const { mutate: contact, isPending } = useMutation({

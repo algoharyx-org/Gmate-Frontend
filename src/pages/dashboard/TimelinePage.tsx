@@ -1,12 +1,8 @@
 import { useTaskStore } from "@/store/useTaskStore";
 import { 
   Calendar as CalendarIcon, 
- 
- 
   Search, 
-
   ArrowRight,
-
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +12,7 @@ const getStatusStyles = (status: string) => {
   switch (status) {
     case "important":
       return "border-rose-500/20 text-rose-600 dark:text-rose-400 bg-rose-500/5 dark:bg-rose-500/10 shadow-[0_0_15px_rgba(244,63,94,0.1)]";
-    case "inProgress":
+    case "in-progress":
       return "border-blue-500/20 text-blue-600 dark:text-blue-400 bg-blue-500/5 dark:bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.1)]";
     case "upcoming":
       return "border-indigo-500/20 text-indigo-600 dark:text-indigo-400 bg-indigo-500/5 dark:bg-indigo-500/10 shadow-[0_0_15px_rgba(99,102,241,0.1)]";
@@ -31,26 +27,24 @@ export default function TimelinePage() {
   const tasks = useTaskStore((state) => state.tasks);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Sort tasks by date (mock sorting since dates are strings)
   const sortedTasks = useMemo(() => {
     return [...tasks].sort((a, b) => {
-      // Basic date parsing logic for mock data strings like "Mon, Oct 11, 2025"
-      const dateA = new Date(a.date).getTime();
-      const dateB = new Date(b.date).getTime();
+      const dateA = a.dueDate ? new Date(a.dueDate).getTime() : 0;
+      const dateB = b.dueDate ? new Date(b.dueDate).getTime() : 0;
       return dateA - dateB;
     });
   }, [tasks]);
 
   const filteredTasks = sortedTasks.filter(task => 
     task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    task.tag.toLowerCase().includes(searchQuery.toLowerCase())
+    (task.tag && task.tag.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  // Group tasks by Month/Year for a better timeline experience
   const groupedTasks = useMemo(() => {
     const groups: Record<string, typeof tasks> = {};
     filteredTasks.forEach(task => {
-      const date = new Date(task.date);
+      const dateStr = task.dueDate || new Date().toISOString();
+      const date = new Date(dateStr);
       const key = date.toLocaleString('default', { month: 'long', year: 'numeric' });
       if (!groups[key]) groups[key] = [];
       groups[key].push(task);
@@ -58,9 +52,17 @@ export default function TimelinePage() {
     return groups;
   }, [filteredTasks]);
 
+  const formatDate = (dateStr: string | undefined) => {
+    if (!dateStr) return { day: "N/A", month: "" };
+    const date = new Date(dateStr);
+    return {
+      day: date.getDate().toString(),
+      month: date.toLocaleDateString('en-US', { weekday: 'short' }),
+    };
+  };
+
   return (
     <div className="w-full max-w-7xl mx-auto p-6 md:p-8 space-y-10 animate-fade-in text-slate-900 dark:text-slate-100 pb-20">
-      {/* Header */}
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
         <div className="space-y-1">
           <h1 className="text-3xl sm:text-4xl font-black tracking-tight leading-none">Timeline</h1>
@@ -81,7 +83,6 @@ export default function TimelinePage() {
         </div>
       </header>
 
-      {/* Timeline List */}
       <div className="space-y-12">
         {Object.entries(groupedTasks).length > 0 ? Object.entries(groupedTasks).map(([month, tasksInMonth]) => (
           <section key={month} className="space-y-6">
@@ -91,9 +92,10 @@ export default function TimelinePage() {
             </div>
 
             <div className="relative space-y-4 ml-2 pl-8 border-l border-slate-200 dark:border-white/5">
-              {tasksInMonth.map((task) => (
-                <div key={task.id} className="group relative">
-                  {/* Timeline Dot */}
+              {tasksInMonth.map((task) => {
+                const { day, month: monthStr } = formatDate(task.dueDate);
+                return (
+                <div key={task._id} className="group relative">
                   <div className={`absolute -left-[37px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-4 border-background z-10 transition-transform group-hover:scale-125 ${
                     task.status === 'completed' ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : 
                     task.status === 'important' ? 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.4)]' : 'bg-indigo-500'
@@ -101,8 +103,8 @@ export default function TimelinePage() {
 
                   <div className="universal-card p-5 flex flex-col sm:flex-row sm:items-center gap-6 transition-all duration-300 hover:border-primary/40 hover:shadow-xl">
                     <div className="flex flex-col items-center justify-center w-14 h-14 rounded-2xl bg-slate-100 dark:bg-white/5 border border-border/50 shrink-0">
-                      <span className="text-[9px] font-black uppercase opacity-50">{task.date.split(',')[0]}</span>
-                      <span className="text-xl font-black leading-none">{task.date.match(/\d+/)}</span>
+                      <span className="text-[9px] font-black uppercase opacity-50">{monthStr}</span>
+                      <span className="text-xl font-black leading-none">{day}</span>
                     </div>
 
                     <div className="flex-1 min-w-0 space-y-1">
@@ -110,7 +112,7 @@ export default function TimelinePage() {
                         <Badge variant="outline" className={`px-2 py-0 text-[8px] font-black tracking-widest uppercase transition-all duration-500 ${getStatusStyles(task.status)}`}>
                           {task.status}
                         </Badge>
-                        <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest opacity-50">{task.tag}</span>
+                        <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest opacity-50">{task.tag || "GENERAL"}</span>
                       </div>
                       <h3 className="text-base font-bold text-foreground truncate group-hover:text-primary transition-colors">{task.title}</h3>
                       <p className="text-xs text-muted-foreground line-clamp-1 font-medium opacity-70">{task.description}</p>
@@ -130,7 +132,7 @@ export default function TimelinePage() {
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           </section>
         )) : (

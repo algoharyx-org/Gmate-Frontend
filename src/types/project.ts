@@ -12,38 +12,47 @@ export const TaskStatusSchema = z.enum([
 export type TaskStatus = z.infer<typeof TaskStatusSchema>;
 
 export const TaskSchema = z.object({
-  id: z.string(),
-  projectId: z.string(),
-  title: z.string(),
-  description: z.string().optional(),
+  _id: z.string(),
+  project: z.string(),
+  title: z.string().min(3, "Title must be at least 3 characters"),
+  description: z.string().min(10, "Description must be at least 10 characters").optional(),
   status: TaskStatusSchema,
   priority: z.enum(["low", "medium", "high", "urgent"]),
   tag: z.string().optional(),
-  assignee: z.object({
-    name: z.string(),
-    avatar: z.string().optional(),
-  }),
+  assignee: z.string().or(z.object({ _id: z.string(), name: z.string(), avatar: z.string().optional() })).optional(),
+  createdBy: z.string().optional(),
   dueDate: z.string().optional(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
 });
 
 export type Task = z.infer<typeof TaskSchema>;
 
 export const ProjectSchema = z.object({
-  id: z.string(),
-  name: z.string().min(3, "Name must be at least 3 characters"),
+  _id: z.string(),
+  title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(5, "Description must be at least 5 characters"),
   status: z.enum(["active", "on-hold", "completed", "planning"]),
-  progress: z.number().min(0).max(100),
-  members: z.number().min(0),
+  owner: z.string().or(z.object({ _id: z.string(), name: z.string() })).optional(),
+  members: z.array(z.object({
+    user: z.string().or(z.object({ _id: z.string(), name: z.string(), avatar: z.string().optional() })),
+    role: z.enum(["manager", "developer", "viewer"])
+  })).optional(),
+  progress: z.number().min(0).max(100).optional().default(0),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
   createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
 });
 
 export type Project = z.infer<typeof ProjectSchema>;
 
-export const ProjectFormSchema = ProjectSchema.omit({
-  id: true,
-  progress: true,
-  createdAt: true,
+export const ProjectFormSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters"),
+  description: z.string().min(10, "Description must be at least 10 characters"),
+  status: z.enum(["active", "on-hold", "completed", "planning"]),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
 });
 
 export type ProjectFormData = z.infer<typeof ProjectFormSchema>;

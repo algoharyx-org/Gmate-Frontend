@@ -1,72 +1,85 @@
-import type { Project } from "../types/project";
+import api, { handleApiError } from "../api/axios";
+import type { Project, ProjectFormData } from "../types/project";
 
-// Initial mock data
-let projects: Project[] = [
-  {
-    id: "1",
-    name: "Gmate Rebranding",
-    description: "Modernizing the brand identity and visual language.",
-    status: "active",
-    progress: 65,
-    members: 4,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    name: "Core API Refactor",
-    description: "Migrating to a more scalable architecture.",
-    status: "planning",
-    progress: 20,
-    members: 2,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "3",
-    name: "Mobile App v2",
-    description: "Building the next generation mobile experience.",
-    status: "completed",
-    progress: 100,
-    members: 6,
-    createdAt: new Date().toISOString(),
-  },
-];
-
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+interface ApiResponse<T> {
+  statusCode: number;
+  success: boolean;
+  message: string;
+  data: T;
+}
 
 export const projectService = {
   async getProjects(): Promise<Project[]> {
-    await delay(800);
-    return [...projects];
+    try {
+      const response = await api.get<ApiResponse<Project[]>>("/projects");
+      return response.data.data || [];
+    } catch (error) {
+      throw handleApiError(error);
+    }
   },
 
-  async getProjectById(id: string): Promise<Project | undefined> {
-    await delay(500);
-    return projects.find((p) => p.id === id);
+  async getMyProjects(): Promise<Project[]> {
+    try {
+      const response = await api.get<ApiResponse<Project[]>>("/projects/me");
+      return response.data.data || [];
+    } catch (error) {
+      throw handleApiError(error);
+    }
   },
 
-  async createProject(data: Omit<Project, "id" | "createdAt" | "progress">): Promise<Project> {
-    await delay(1000);
-    const newProject: Project = {
-      ...data,
-      id: Math.random().toString(36).substring(7),
-      progress: 0,
-      createdAt: new Date().toISOString(),
-    };
-    projects.push(newProject);
-    return newProject;
+  async getProjectById(id: string): Promise<Project> {
+    try {
+      const response = await api.get<ApiResponse<Project>>(`/projects/${id}`);
+      return response.data.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
   },
 
-  async updateProject(id: string, data: Partial<Project>): Promise<Project> {
-    await delay(1000);
-    const index = projects.findIndex((p) => p.id === id);
-    if (index === -1) throw new Error("Project not found");
-    
-    projects[index] = { ...projects[index], ...data };
-    return projects[index];
+  async createProject(data: ProjectFormData): Promise<Project> {
+    try {
+      const response = await api.post<ApiResponse<Project>>("/projects", data);
+      return response.data.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  async updateProject(id: string, data: Partial<ProjectFormData>): Promise<Project> {
+    try {
+      const response = await api.put<ApiResponse<Project>>(`/projects/${id}`, data);
+      return response.data.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
   },
 
   async deleteProject(id: string): Promise<void> {
-    await delay(1000);
-    projects = projects.filter((p) => p.id !== id);
+    try {
+      await api.delete(`/projects/${id}`);
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  async addMember(projectId: string, memberId: string, role: string): Promise<Project> {
+    try {
+      const response = await api.post<ApiResponse<Project>>(`/projects/${projectId}/members`, {
+        userId: memberId,
+        role,
+      });
+      return response.data.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  async removeMember(projectId: string, memberId: string): Promise<Project> {
+    try {
+      const response = await api.delete<ApiResponse<Project>>(`/projects/${projectId}/members/${memberId}`);
+      return response.data.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
   },
 };

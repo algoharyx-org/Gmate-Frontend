@@ -9,7 +9,7 @@ import type { DragStartEvent, DragEndEvent } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { api } from "@/services/api.mock";
+import { taskService } from "@/services/task.service";
 import type { Task, TaskStatus } from "@/types/project";
 
 export function useKanbanBoard(projectId: string) {
@@ -29,7 +29,7 @@ export function useKanbanBoard(projectId: string) {
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ taskId, status }: { taskId: string; status: TaskStatus }) =>
-      api.updateTaskStatus(taskId, status),
+      taskService.updateTask(taskId, { status }),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
       toast.success(`Task moved to ${variables.status.toUpperCase()}`);
@@ -62,7 +62,7 @@ export function useKanbanBoard(projectId: string) {
 
     if (newStatus && activeTaskData.status !== newStatus) {
       updateStatusMutation.mutate({
-        taskId: activeTaskData.id,
+        taskId: activeTaskData._id,
         status: newStatus,
       });
     }

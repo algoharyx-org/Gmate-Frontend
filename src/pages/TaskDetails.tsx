@@ -11,7 +11,7 @@ import {
   X,
 } from "lucide-react";
 import { useTaskStore } from "@/store/useTaskStore";
-import EditTaskDialog from "@/components/tasks/EditTaskDialog";
+import EditTaskDialog from "@/components/EditTaskModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -19,7 +19,7 @@ const getStatusStyles = (status: string) => {
   switch (status) {
     case "important":
       return "border-rose-500/20 text-rose-600 dark:text-rose-400 bg-rose-500/5 dark:bg-rose-500/10 shadow-[0_0_15px_rgba(244,63,94,0.1)]";
-    case "inProgress":
+    case "in-progress":
       return "border-blue-500/20 text-blue-600 dark:text-blue-400 bg-blue-500/5 dark:bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.1)]";
     case "upcoming":
       return "border-indigo-500/20 text-indigo-600 dark:text-indigo-400 bg-indigo-500/5 dark:bg-indigo-500/10 shadow-[0_0_15px_rgba(99,102,241,0.1)]";
@@ -37,9 +37,7 @@ export default function TaskDetails() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const task = useMemo(() => {
-    const numericId = Number(id);
-    if (Number.isNaN(numericId)) return undefined;
-    return tasks.find((t) => t.id === numericId);
+    return tasks.find((t) => t._id === id);
   }, [id, tasks]);
 
   const [isCompleted, setIsCompleted] = useState<boolean>(() => task?.status === "completed");
@@ -183,11 +181,11 @@ export default function TaskDetails() {
             <div className="space-y-4">
               <div className="flex justify-between items-center py-3 border-b border-border/50">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Created</span>
-                <span className="text-xs font-black">{task.date}</span>
+                <span className="text-xs font-black">{task.dueDate || "No date"}</span>
               </div>
               <div className="flex justify-between items-center py-3 border-b border-border/50">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Tag</span>
-                <Badge variant="secondary" className="rounded-md font-bold uppercase text-[9px] tracking-widest">{task.tag}</Badge>
+                <Badge variant="secondary" className="rounded-md font-bold uppercase text-[9px] tracking-widest">{task.tag || "GENERAL"}</Badge>
               </div>
               <div className="flex justify-between items-center py-3 border-b border-border/50">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Priority</span>
@@ -201,8 +199,7 @@ export default function TaskDetails() {
       {editingTask && (
         <EditTaskDialog
           task={editingTask}
-          open={!!editingTask}
-          onOpenChange={(open) => !open && setEditingTask(null)}
+          onClose={() => setEditingTask(null)}
         />
       )}
     </div>

@@ -11,6 +11,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -46,7 +47,6 @@ export const CreateProjectDialog: React.FC<ProjectDialogProps> = ({ open, onOpen
     resolver: zodResolver(ProjectFormSchema),
     defaultValues: {
       status: "planning",
-      members: 0,
     },
   });
 
@@ -72,17 +72,20 @@ export const CreateProjectDialog: React.FC<ProjectDialogProps> = ({ open, onOpen
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Create New Project</DialogTitle>
+          <DialogDescription className="text-xs">
+            Enter the details for your new project to begin tracking goals.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Project Name</Label>
+            <Label htmlFor="title">Project Title</Label>
             <Input
-              id="name"
-              placeholder="Enter project name"
-              {...register("name")}
-              className={errors.name ? "border-red-500" : ""}
+              id="title"
+              placeholder="Enter project title"
+              {...register("title")}
+              className={errors.title ? "border-red-500" : ""}
             />
-            {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
+            {errors.title && <p className="text-xs text-red-500">{errors.title.message}</p>}
           </div>
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
@@ -97,16 +100,6 @@ export const CreateProjectDialog: React.FC<ProjectDialogProps> = ({ open, onOpen
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="members">Team Members</Label>
-            <Input
-              id="members"
-              type="number"
-              {...register("members", { valueAsNumber: true })}
-              className={errors.members ? "border-red-500" : ""}
-            />
-            {errors.members && <p className="text-xs text-red-500">{errors.members.message}</p>}
-          </div>
-          <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
             <Select
               defaultValue="planning"
@@ -118,6 +111,7 @@ export const CreateProjectDialog: React.FC<ProjectDialogProps> = ({ open, onOpen
               <SelectContent>
                 <SelectItem value="planning">Planning</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="on-hold">On Hold</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
               </SelectContent>
             </Select>
@@ -147,18 +141,17 @@ export const EditProjectDialog: React.FC<EditProjectDialogProps> = ({
   } = useForm<ProjectFormData>({
     resolver: zodResolver(ProjectFormSchema),
     defaultValues: {
-      name: project.name,
+      title: project.title,
       description: project.description,
       status: project.status,
-      members: project.members,
     },
   });
 
   const mutation = useMutation({
-    mutationFn: (data: ProjectFormData) => projectService.updateProject(project.id!, data),
+    mutationFn: (data: ProjectFormData) => projectService.updateProject(project._id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
-      queryClient.invalidateQueries({ queryKey: ["project", project.id] });
+      queryClient.invalidateQueries({ queryKey: ["project", project._id] });
       toast.success("Project updated successfully");
       onOpenChange(false);
     },
@@ -176,16 +169,19 @@ export const EditProjectDialog: React.FC<EditProjectDialogProps> = ({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit Project</DialogTitle>
+          <DialogDescription className="text-xs">
+            Update your project information and status below.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="edit-name">Project Name</Label>
+            <Label htmlFor="edit-title">Project Title</Label>
             <Input
-              id="edit-name"
-              {...register("name")}
-              className={errors.name ? "border-red-500" : ""}
+              id="edit-title"
+              {...register("title")}
+              className={errors.title ? "border-red-500" : ""}
             />
-            {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
+            {errors.title && <p className="text-xs text-red-500">{errors.title.message}</p>}
           </div>
           <div className="space-y-2">
             <Label htmlFor="edit-description">Description</Label>
@@ -199,16 +195,6 @@ export const EditProjectDialog: React.FC<EditProjectDialogProps> = ({
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="members">Team Members</Label>
-            <Input
-              id="members"
-              type="number"
-              {...register("members", { valueAsNumber: true })}
-              className={errors.members ? "border-red-500" : ""}
-            />
-            {errors.members && <p className="text-xs text-red-500">{errors.members.message}</p>}
-          </div>
-          <div className="space-y-2">
             <Label htmlFor="edit-status">Status</Label>
             <Select
               defaultValue={project.status}
@@ -220,6 +206,7 @@ export const EditProjectDialog: React.FC<EditProjectDialogProps> = ({
               <SelectContent>
                 <SelectItem value="planning">Planning</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="on-hold">On Hold</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
               </SelectContent>
             </Select>

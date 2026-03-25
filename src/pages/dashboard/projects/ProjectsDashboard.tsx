@@ -6,14 +6,24 @@ import { ProjectCard } from "@/components/projects/ProjectCard";
 import { CreateProjectDialog } from "@/components/projects/ProjectDialogs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ErrorFallback } from "@/components/shared/ErrorFallback";
+import { ApiError } from "@/api/axios";
 
 const ProjectsDashboard: React.FC = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const { data: projects, isLoading } = useQuery({
+  const { 
+    data: projects, 
+    isLoading, 
+    error,
+    refetch 
+  } = useQuery({
     queryKey: ["projects"],
     queryFn: () => projectService.getProjects(),
+    retry: 1,
   });
+
+  const isNetworkError = error instanceof ApiError && error.isNetworkError;
 
   const projectStats = [
     { label: "Total Projects", value: projects?.length || 0, icon: <BarChart2 size={16} />, color: "text-indigo-500" },
@@ -96,10 +106,15 @@ const ProjectsDashboard: React.FC = () => {
             />
           ))}
         </div>
+      ) : error ? (
+        <ErrorFallback 
+          isNetworkError={isNetworkError}
+          onRetry={() => refetch()}
+        />
       ) : projects && projects.length > 0 ? (
         <div className={viewMode === "grid" ? "grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3" : "flex flex-col gap-4"}>
           {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+            <ProjectCard key={project._id} project={project} />
           ))}
         </div>
       ) : (

@@ -24,7 +24,7 @@ export function KanbanColumn({ status, tasks, label, onTaskClick }: Props) {
     },
   });
 
-  const taskIds = tasks.map((t) => t.id);
+  const taskIds = tasks.map((t) => t._id);
 
   return (
     <div
@@ -54,7 +54,7 @@ export function KanbanColumn({ status, tasks, label, onTaskClick }: Props) {
         <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
             <KanbanTaskCard 
-              key={task.id} 
+              key={task._id} 
               task={task} 
               onClick={() => onTaskClick?.(task)}
             />

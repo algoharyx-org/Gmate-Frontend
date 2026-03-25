@@ -3,9 +3,9 @@ import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 
 export default function ProjectCard({ project }: { project: {
-  id: string;
-  name: string;
-  desc: string;
+  _id: string;
+  title: string;
+  description: string;
   tasks: number;
   completed: number;
   members: number;
@@ -30,8 +30,8 @@ export default function ProjectCard({ project }: { project: {
           {project.status}
         </Badge>
       </div>
-      <h3 className="text-foreground mb-1 font-semibold">{project.name}</h3>
-      <p className="text-muted-foreground mb-4 text-xs">{project.desc}</p>
+      <h3 className="text-foreground mb-1 font-semibold">{project.title}</h3>
+      <p className="text-muted-foreground mb-4 text-xs">{project.description}</p>
 
       <Progress value={(project.completed / project.tasks) * 100} className="mb-3 h-1.5" />
 

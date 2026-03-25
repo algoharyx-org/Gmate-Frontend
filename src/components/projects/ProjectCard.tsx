@@ -32,7 +32,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const deleteMutation = useMutation({
-    mutationFn: () => projectService.deleteProject(project.id!),
+    mutationFn: () => projectService.deleteProject(project._id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       toast.success("Project deleted");
@@ -52,7 +52,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
   return (
     <>
       <div
-        onClick={() => navigate(`/dashboard/projects/${project.id}`)}
+        onClick={() => navigate(`/dashboard/projects/${project._id}`)}
         className="group relative flex flex-col justify-between rounded-xl border border-muted-foreground/10 bg-card p-5 transition-all hover:border-primary/50 hover:shadow-lg cursor-pointer"
       >
         <div className="space-y-3">
@@ -80,7 +80,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
             </DropdownMenu>
           </div>
           <div>
-            <h3 className="text-lg font-semibold tracking-tight">{project.name}</h3>
+            <h3 className="text-lg font-semibold tracking-tight">{project.title}</h3>
             <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
               {project.description}
             </p>

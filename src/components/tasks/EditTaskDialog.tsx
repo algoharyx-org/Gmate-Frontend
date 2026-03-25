@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 const taskSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(5, "Description must be at least 5 characters"),
-  status: z.enum(["todo", "inProgress", "review", "completed", "important", "upcoming"] as const),
+  status: z.enum(["to-do", "in-progress", "review", "completed", "important", "upcoming"] as const),
   tag: z.string().min(1, "Tag is required"),
 });
 
@@ -38,16 +38,16 @@ export default function EditTaskDialog({ task, open, onOpenChange }: Props) {
     resolver: zodResolver(taskSchema),
     defaultValues: {
       title: task.title,
-      description: task.description,
+      description: task.description || "",
       status: task.status as any,
-      tag: task.tag,
+      tag: task.tag || "",
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: TaskFormValues) => api.updateTaskStatus(task.id, data.status as TaskStatus),
+    mutationFn: (data: TaskFormValues) => api.updateTaskStatus(task._id, data.status as TaskStatus),
     onSuccess: (_, data) => {
-      updateTask(task.id, { status: data.status as any, title: data.title, description: data.description, tag: data.tag });
+      updateTask(task._id, { status: data.status as any, title: data.title, description: data.description, tag: data.tag });
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       toast.success("Task updated");
       onOpenChange(false);
@@ -55,13 +55,13 @@ export default function EditTaskDialog({ task, open, onOpenChange }: Props) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: () => api.deleteTask(task.id),
+    mutationFn: () => api.deleteTask(task._id),
     onSuccess: () => {
-      deleteTask(task.id);
+      deleteTask(task._id);
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       toast.success("Task deleted");
       onOpenChange(false);
-      if (window.location.pathname.includes(`/tasks/${task.id}`)) {
+      if (window.location.pathname.includes(`/tasks/${task._id}`)) {
         navigate("/dashboard/my-tasks");
       }
     },
@@ -98,8 +98,8 @@ export default function EditTaskDialog({ task, open, onOpenChange }: Props) {
               <div className="space-y-2">
                 <Label htmlFor="status" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Status</Label>
                 <select {...register("status")} className="flex h-12 w-full rounded-xl border-none bg-muted/30 px-4 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
-                  <option value="todo">To Do</option>
-                  <option value="inProgress">In Progress</option>
+                  <option value="to-do">To Do</option>
+                  <option value="in-progress">In Progress</option>
                   <option value="completed">Completed</option>
                   <option value="important">Important</option>
                   <option value="upcoming">Upcoming</option>

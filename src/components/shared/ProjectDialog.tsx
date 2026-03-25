@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { api } from "@/services/api.mock";
+import { projectService } from "@/services/project.service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,9 +13,9 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 
 const projectSchema = z.object({
-  name: z.string().min(3, "Project name must be at least 3 characters"),
+  title: z.string().min(3, "Project name must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
-  status: z.enum(["active", "on-hold", "completed"]),
+  status: z.enum(["active", "on-hold", "completed", "planning"]),
 });
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
@@ -30,12 +30,15 @@ export default function ProjectDialog() {
   });
 
   const mutation = useMutation({
-    mutationFn: (data: ProjectFormValues) => api.createProject(data),
+    mutationFn: (data: ProjectFormValues) => projectService.createProject(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       toast.success("Project created");
       setOpen(false);
       reset();
+    },
+    onError: () => {
+      toast.error("Failed to create project");
     },
   });
 
@@ -61,8 +64,8 @@ export default function ProjectDialog() {
           
           <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="name" className="text-xs font-medium">Project Name</Label>
-              <Input {...register("name")} placeholder="e.g. Next.js Migration" className="bg-background" />
+              <Label htmlFor="title" className="text-xs font-medium">Project Name</Label>
+              <Input {...register("title")} placeholder="e.g. Next.js Migration" className="bg-background" />
             </div>
 
             <div className="space-y-1.5">

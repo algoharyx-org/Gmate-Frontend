@@ -10,77 +10,108 @@ import {
   Users,
   BarChart3,
   ArrowUpRight,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import AddTaskDialog from "@/components/tasks/AddTaskDialog";
-
-const kpis = [
-  {
-    label: "Tasks Due Today",
-    value: "14",
-    icon: Calendar,
-    change: "+4 today",
-    color: "bg-primary",
-  },
-  {
-    label: "Active Projects",
-    value: "06",
-    icon: FolderKanban,
-    change: "2 new this week",
-    color: "bg-blue-500",
-  },
-  {
-    label: "Completed this Week",
-    value: "28",
-    icon: CheckSquare,
-    change: "+12 vs last week",
-    color: "bg-emerald-500",
-  },
-];
-
-const recentTasks = [
-  {
-    title: "Project Research",
-    project: "Mobile App Redesign",
-    due: "Today, 5:00 PM",
-    status: "urgent",
-  },
-  {
-    title: "API Endpoint Specs",
-    project: "Backend API v2",
-    due: "Tomorrow",
-    status: "in-progress",
-  },
-  {
-    title: "Client Feedback Loop",
-    project: "Marketing Site",
-    due: "Wed, Oct 13",
-    status: "todo",
-  },
-  {
-    title: "UI Design Audit",
-    project: "Design System",
-    due: "Completed",
-    status: "completed",
-  },
-];
-
-const weeklyPulse = [
-  { day: "Mon", count: 12, height: "h-[45%]" },
-  { day: "Tue", count: 18, height: "h-[65%]" },
-  { day: "Wed", count: 24, height: "h-[85%]" },
-  { day: "Thu", count: 16, height: "h-[55%]" },
-  { day: "Fri", count: 28, height: "h-[100%]" },
-  { day: "Sat", count: 8, height: "h-[30%]" },
-  { day: "Sun", count: 5, height: "h-[20%]" },
-];
+import { projectService } from "@/services/project.service";
+import { taskService } from "@/services/task.service";
+import { ErrorFallback } from "@/components/shared/ErrorFallback";
+import { ApiError } from "@/api/axios";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
+
+  const { 
+    data: projects, 
+    isLoading: isProjectsLoading,
+    error: projectsError,
+    refetch: refetchProjects
+  } = useQuery({
+    queryKey: ["projects"],
+    queryFn: () => projectService.getProjects(),
+    retry: 1,
+  });
+
+  const { 
+    data: tasks, 
+    isLoading: isTasksLoading,
+    error: tasksError,
+    refetch: refetchTasks
+  } = useQuery({
+    queryKey: ["my-tasks"],
+    queryFn: () => taskService.getMyTasks(),
+    retry: 1,
+  });
+
+  const isLoading = isProjectsLoading || isTasksLoading;
+  const error = projectsError || tasksError;
+  const isNetworkError = error instanceof ApiError && error.isNetworkError;
+
+  const handleRetry = () => {
+    refetchProjects();
+    refetchTasks();
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <ErrorFallback 
+      isNetworkError={isNetworkError}
+      onRetry={handleRetry}
+    />;
+  }
+
+  const activeProjects = projects?.filter(p => p.status === 'active') || [];
+  const completedTasks = tasks?.filter(t => t.status === 'completed') || [];
+  const urgentTasks = tasks?.filter(t => t.priority === 'urgent' && t.status !== 'completed') || [];
+  
+  const kpis = [
+    {
+      label: "Urgent Tasks",
+      value: urgentTasks.length.toString().padStart(2, '0'),
+      icon: Calendar,
+      change: "Action required",
+      color: "bg-primary",
+    },
+    {
+      label: "Active Projects",
+      value: activeProjects.length.toString().padStart(2, '0'),
+      icon: FolderKanban,
+      change: `${projects?.length || 0} total projects`,
+      color: "bg-blue-500",
+    },
+    {
+      label: "Completed Tasks",
+      value: completedTasks.length.toString().padStart(2, '0'),
+      icon: CheckSquare,
+      change: "Total contribution",
+      color: "bg-emerald-500",
+    },
+  ];
+
+  const recentTasks = tasks?.slice(0, 5) || [];
+
+  const weeklyPulse = [
+    { day: "Mon", count: 12, height: "h-[45%]" },
+    { day: "Tue", count: 18, height: "h-[65%]" },
+    { day: "Wed", count: 24, height: "h-[85%]" },
+    { day: "Thu", count: 16, height: "h-[55%]" },
+    { day: "Fri", count: 28, height: "h-[100%]" },
+    { day: "Sat", count: 8, height: "h-[30%]" },
+    { day: "Sun", count: 5, height: "h-[20%]" },
+  ];
 
   return (
     <div className="flex flex-col space-y-10 animate-fade-in pb-12 px-2 lg:px-6 text-slate-900 dark:text-slate-100">
@@ -91,11 +122,11 @@ export default function DashboardPage() {
             <Zap size={20} className="fill-primary" />
           </div>
           <h1 className="text-foreground text-3xl font-black tracking-tight lg:text-4xl">
-            Welcome back, Mohamed
+            Workspace Overview
           </h1>
         </div>
         <p className="text-muted-foreground lg:ml-13 max-w-2xl text-sm font-medium leading-relaxed lg:text-base">
-          You have <span className="text-foreground font-bold italic underline decoration-primary/40 underline-offset-4">14 tasks</span> due today and 2 projects waiting for review.
+          You have <span className="text-foreground font-bold italic underline decoration-primary/40 underline-offset-4">{urgentTasks.length} urgent tasks</span> and {activeProjects.length} active projects in your workspace.
         </p>
       </header>
 
@@ -170,11 +201,13 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-8">
                   <div className="flex flex-col">
                     <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Completion Rate</span>
-                    <span className="text-xl font-black text-slate-900 dark:text-white">94.2%</span>
+                    <span className="text-xl font-black text-slate-900 dark:text-white">
+                      {tasks?.length ? Math.round((completedTasks.length / tasks.length) * 100) : 0}%
+                    </span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Total Hours</span>
-                    <span className="text-xl font-black text-slate-900 dark:text-white">142h</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Total Tasks</span>
+                    <span className="text-xl font-black text-slate-900 dark:text-white">{tasks?.length || 0}</span>
                   </div>
                 </div>
                 <Button variant="outline" className="rounded-full border-slate-200 dark:border-white/10 text-[10px] font-black uppercase tracking-widest px-6 h-10 group">
@@ -197,33 +230,43 @@ export default function DashboardPage() {
             </header>
             
             <div className="divide-y divide-slate-200 dark:divide-white/5">
-              {recentTasks.map((task, i) => (
-                <div key={i} className="group flex items-center justify-between p-6 transition-all hover:bg-white/40 dark:hover:bg-white/5">
-                  <div className="flex items-center gap-4 min-w-0">
-                    <div className={`h-2.5 w-2.5 rounded-full ${
-                      task.status === "urgent" ? "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.4)]" : 
-                      task.status === "in-progress" ? "bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.4)]" :
-                      task.status === "todo" ? "bg-slate-300 dark:bg-slate-700" : "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]"
-                    }`} />
-                    <div className="min-w-0">
-                      <h4 className="text-slate-900 dark:text-white truncate text-sm font-bold group-hover:text-primary transition-colors">
-                        {task.title}
-                      </h4>
-                      <p className="text-slate-500 dark:text-slate-500 mt-0.5 truncate text-[10px] font-black uppercase tracking-widest">
-                        {task.project}
-                      </p>
+              {recentTasks.length > 0 ? (
+                recentTasks.map((task) => (
+                  <div 
+                    key={task._id} 
+                    className="group flex items-center justify-between p-6 transition-all hover:bg-white/40 dark:hover:bg-white/5 cursor-pointer"
+                    onClick={() => navigate(`/dashboard/projects/${task.project}`)}
+                  >
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className={`h-2.5 w-2.5 rounded-full ${
+                        task.priority === "urgent" ? "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.4)]" : 
+                        task.priority === "high" ? "bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.4)]" :
+                        task.status === "completed" ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-700"
+                      }`} />
+                      <div className="min-w-0">
+                        <h4 className="text-slate-900 dark:text-white truncate text-sm font-bold group-hover:text-primary transition-colors">
+                          {task.title}
+                        </h4>
+                        <p className="text-slate-500 dark:text-slate-500 mt-0.5 truncate text-[10px] font-black uppercase tracking-widest">
+                          {task.tag || 'GENERAL'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-6">
+                      <span className="text-slate-400 dark:text-slate-500 hidden text-[10px] font-black uppercase tracking-widest sm:block">
+                        {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No date'}
+                      </span>
+                      <button className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                        <MoreVertical size={16} />
+                      </button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-6">
-                    <span className="text-slate-400 dark:text-slate-500 hidden text-[10px] font-black uppercase tracking-widest sm:block">
-                      {task.due}
-                    </span>
-                    <button className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
-                      <MoreVertical size={16} />
-                    </button>
-                  </div>
+                ))
+              ) : (
+                <div className="p-10 text-center text-muted-foreground text-sm italic">
+                  No tasks found in your workspace.
                 </div>
-              ))}
+              )}
             </div>
           </section>
         </div>

@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "react-hot-toast";
+import { Toaster } from "sonner";
 import MainLayout from "./Layouts/MainLayout";
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -25,11 +25,12 @@ import NotificationsPage from "./pages/dashboard/NotificationsPage";
 import TeamPage from "./pages/dashboard/TeamPage";
 import TimelinePage from "./pages/dashboard/TimelinePage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      staleTime: 1000 * 60 * 5,
       retry: 1,
     },
   },
@@ -55,7 +56,11 @@ export default function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
               </Route>
-              <Route path="/dashboard" element={<DashboardLayout />}>
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }>
                 <Route index element={<DashboardPage />} />
                 <Route path="my-tasks" element={<MyTasksPage />} />
                 <Route path="tasks/:id" element={<TaskDetails />} />
@@ -74,27 +79,7 @@ export default function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
-          <Toaster
-            position="top-center"
-            gutter={12}
-            containerStyle={{ margin: "8px" }}
-            toastOptions={{
-              success: {
-                duration: 3000,
-              },
-              error: {
-                duration: 5000,
-              },
-              style: {
-                fontSize: "16px",
-                maxWidth: "500px",
-                padding: "16px 24px",
-                borderRadius: "var(--radius)",
-                backgroundColor: "var(--color-card)",
-                color: "var(--color-card-foreground)",
-              },
-            }}
-          />
+          <Toaster richColors position="top-center" expand={true} />
         </NotificationProvider>
       </QueryClientProvider>
     </ThemeProvider>

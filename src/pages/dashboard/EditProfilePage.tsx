@@ -73,11 +73,15 @@ export default function EditProfilePage() {
     getValues,
     reset,
     formState: { errors },
-  } = useForm();
+  } = useForm<{
+    oldPassword: string;
+    newPassword: string;
+    confirmNewPassword: string;
+  }>();
 
   const { changePassword, isPending: isChangingPassword } = useChangePassword();
 
-  function onSubmitChangePassword(data) {
+  function onSubmitChangePassword(data: { oldPassword: string; newPassword: string; confirmNewPassword: string }) {
     changePassword(data, { onSettled: () => reset() });
   }
 
@@ -270,7 +274,7 @@ export default function EditProfilePage() {
             />
             {errors.newPassword && (
               <p className="text-xs text-destructive">
-                {errors.newPassword.message}
+                {String(errors.newPassword.message || "")}
               </p>
             )}
           </div>
@@ -290,12 +294,12 @@ export default function EditProfilePage() {
             />
             {errors.confirmNewPassword && (
               <p className="text-xs text-destructive">
-                {errors.confirmNewPassword.message}
+                {String(errors.confirmNewPassword.message || "")}
               </p>
             )}
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={reset}>
+            <Button type="button" variant="outline" onClick={() => reset()}>
               Cancel
             </Button>
             <Button

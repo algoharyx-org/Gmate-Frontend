@@ -1,51 +1,104 @@
 import { useState } from "react";
-import { X, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useTaskStore } from "@/store/useTaskStore";
-import type { TaskStatus } from "@/data/tasks";
 import { Label } from "@/components/ui/label";
+import { projectService } from "@/services/project.service";
+import { taskService } from "@/services/task.service";
+import type { TaskStatus } from "@/types/project";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 type Props = {
   onClose: () => void;
+  projectId?: string;
 };
 
-export default function AddTaskDialog({ onClose }: Props) {
-  const addTask = useTaskStore((state) => state.addTask);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+export default function AddTaskDialog({ onClose, projectId }: Props) {
+  const queryClient = useQueryClient();
+  const [selectedProjectId, setSelectedProjectId] = useState(projectId || "");
+
+  const { data: projects } = useQuery({
+    queryKey: ["projects"],
+    queryFn: () => projectService.getProjects(),
+    enabled: !projectId,
+  });
+
   const [form, setForm] = useState({
     title: "",
     description: "",
-    status: "upcoming" as TaskStatus,
+    status: "to-do" as TaskStatus,
     tag: "GENERAL",
-    date: "",
+    dueDate: "",
+    priority: "medium" as "low" | "medium" | "high" | "urgent",
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const mutation = useMutation({
+    mutationFn: (data: any) => taskService.createTask(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      if (selectedProjectId) {
+        queryClient.invalidateQueries({ queryKey: ["tasks", selectedProjectId] });
+      }
+      toast.success("Task created successfully");
+      onClose();
+    },
+    onError: () => {
+      toast.error("Failed to create task");
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim()) return;
-    setIsSubmitting(true);
-    await new Promise(r => setTimeout(r, 500));
-    addTask({ ...form, date: form.date || new Date().toLocaleDateString() });
-    setIsSubmitting(false);
-    onClose();
+    if (!selectedProjectId) {
+      toast.error("Please select a project");
+      return;
+    }
+
+    mutation.mutate({
+      ...form,
+      project: selectedProjectId,
+    });
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div 
-        className="w-full max-w-lg bg-card border border-border rounded-lg p-6 shadow-lg animate-in zoom-in-95 duration-200"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold">New Task</h2>
-          <button onClick={onClose} className="p-1 text-muted-foreground hover:text-foreground transition-colors">
-            <X size={18} />
-          </button>
-        </div>
+    <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>New Task</DialogTitle>
+          <DialogDescription className="text-xs">
+            Create a new task to track progress within your workspace.
+          </DialogDescription>
+        </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 py-2">
+          {!projectId && (
+            <div className="space-y-1.5">
+              <Label htmlFor="project" className="text-xs font-medium">Project</Label>
+              <select 
+                id="project" 
+                value={selectedProjectId} 
+                onChange={e => setSelectedProjectId(e.target.value)}
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                <option value="">Select a project</option>
+                {projects?.map(p => (
+                  <option key={p._id} value={p._id}>{p.title}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="space-y-1.5">
             <Label htmlFor="title" className="text-xs font-medium">Title</Label>
             <Input id="title" value={form.title} onChange={e => setForm({...form, title: e.target.value})} placeholder="What needs to be done?" className="bg-background" />
@@ -63,18 +116,51 @@ export default function AddTaskDialog({ onClose }: Props) {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="date" className="text-xs font-medium">Due Date</Label>
-              <Input id="date" type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} className="bg-background" />
+              <Input id="date" type="date" value={form.dueDate} onChange={e => setForm({...form, dueDate: e.target.value})} className="bg-background" />
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+             <div className="space-y-1.5">
+                <Label htmlFor="status" className="text-xs font-medium">Status</Label>
+                <select 
+                  id="status" 
+                  value={form.status} 
+                  onChange={e => setForm({...form, status: e.target.value as TaskStatus})}
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
+                  <option value="to-do">To Do</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="review">Review</option>
+                  <option value="completed">Completed</option>
+                  <option value="important">Important</option>
+                  <option value="upcoming">Upcoming</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="priority" className="text-xs font-medium">Priority</Label>
+                <select 
+                  id="priority" 
+                  value={form.priority} 
+                  onChange={e => setForm({...form, priority: e.target.value as any})}
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={onClose} className="h-9 rounded-md">Cancel</Button>
-            <Button type="submit" disabled={isSubmitting} className="h-9 px-4 rounded-md">
-              {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Task"}
+            <Button type="submit" disabled={mutation.isPending} className="h-9 px-4 rounded-md">
+              {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Task"}
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

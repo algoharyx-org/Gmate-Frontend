@@ -2,32 +2,26 @@ import { useResetPassword } from "@/hooks/useResetPassword";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useForm } from "react-hook-form";
-import toast from "react-hot-toast";
+import { useForm, type SubmitHandler } from "react-hook-form";
+import { toast } from "sonner";
+
+interface ResetPasswordForm {
+  password: string;
+  confirmPassword: string;
+}
 
 export default function ResetPassword() {
   const { resetPassword, isPending } = useResetPassword();
-  const { register, formState, getValues, handleSubmit, reset } = useForm();
+  const { register, formState, getValues, handleSubmit, reset } = useForm<ResetPasswordForm>();
   const { errors } = formState;
 
-  function onSubmit({
-    password,
-    confirmPassword,
-  }: {
-    password: string;
-    confirmPassword: string;
-  }) {
-    if (!password || !confirmPassword) {
-      toast.error("Please fill in all fields");
-      return;
-    }
-
-    if (password !== confirmPassword) {
+  const onSubmit: SubmitHandler<ResetPasswordForm> = (data) => {
+    if (data.password !== data.confirmPassword) {
       toast.error("Passwords do not match");
       return;
     }
 
-    resetPassword({ password, confirmPassword }, { onSettled: () => reset() });
+    resetPassword({ password: data.password, confirmPassword: data.confirmPassword }, { onSettled: () => reset() });
   }
 
   return (
@@ -60,7 +54,7 @@ export default function ResetPassword() {
               required
             />
             <span className="text-destructive text-sm">
-              {errors.password?.message}
+              {String(errors.password?.message || "")}
             </span>
           </div>
           <div className="space-y-2">
@@ -78,7 +72,7 @@ export default function ResetPassword() {
               required
             />
             <span className="text-destructive text-sm">
-              {errors.confirmPassword?.message}
+              {String(errors.confirmPassword?.message || "")}
             </span>
           </div>
           <Button type="submit" className="w-full" disabled={isPending}>
