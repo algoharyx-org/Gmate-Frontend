@@ -58,7 +58,7 @@ export default function App() {
               <Route path="/dashboard" element={<DashboardLayout />}>
                 <Route index element={<DashboardPage />} />
                 <Route path="my-tasks" element={<MyTasksPage />} />
-                <Route path="tasks/:id" element={<TaskDetails />} />
+                <Route path="task/:id" element={<TaskDetails />} />
                 <Route path="projects" element={<ProjectsDashboard />} />
                 <Route
                   path="projects/:projectId"

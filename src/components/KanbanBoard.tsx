@@ -17,6 +17,7 @@ import {
 } from "@dnd-kit/sortable";
 import type { Task, TaskStatus } from "../data/tasks";
 import TaskCard from "./shared/TaskCard";
+import { bucketTaskStatus } from "@/utils/taskStatusBucket";
 import { useTaskStore } from "@/store/useTaskStore";
 import { createPortal } from "react-dom";
 
@@ -57,7 +58,12 @@ function KanbanColumn({ label, status, tasks }: { label: string; status: TaskSta
           isOver ? "bg-accent/40 border-primary/20" : ""
         }`}
       >
-        <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+        <SortableContext
+          items={tasks.map((t) =>
+            String((t as Task & { _id?: string })._id ?? t.id),
+          )}
+          strategy={verticalListSortingStrategy}
+        >
           {tasks.map((task) => (
             <TaskCard key={task.id} task={task} />
           ))}
@@ -108,8 +114,11 @@ export default function KanbanBoard({ initialTasks }: KanbanBoardProps) {
       newStatus = overData.task.status as TaskStatus;
     }
 
-    if (newStatus && activeTaskData.status !== newStatus) {
-      updateTask(String(activeTaskData.id), { status: newStatus });
+    if (newStatus && bucketTaskStatus(activeTaskData.status) !== newStatus) {
+      const taskId = String(
+        (activeTaskData as Task & { _id?: string })._id ?? activeTaskData.id,
+      );
+      updateTask(taskId, { status: newStatus });
     }
 
     setActiveTask(null);
@@ -128,7 +137,9 @@ export default function KanbanBoard({ initialTasks }: KanbanBoardProps) {
             key={column.status}
             label={column.label}
             status={column.status}
-            tasks={initialTasks.filter((t) => t.status === column.status)}
+            tasks={initialTasks.filter(
+              (t) => bucketTaskStatus(t.status) === column.status,
+            )}
           />
         ))}
       </div>
